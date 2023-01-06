@@ -3,23 +3,21 @@ package main
 import (
 	"archive/zip"
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"time"
+
+	"github.com/unkn0wn3rr0r/zig-version-downloader/utils"
 )
 
 const (
-	windows = "windows"
-	linux   = "linux"
-	macos   = "macos"
-	darwin  = "darwin"
+	zigDownloadUrl   = "https://ziglang.org/download/index.json"
+	zigArchivePrefix = "https://ziglang.org/builds"
 )
 
 func main() {
@@ -27,12 +25,12 @@ func main() {
 
 	client := &http.Client{}
 
-	res := request(http.MethodGet, "https://ziglang.org/download/index.json", client)
+	res := request(http.MethodGet, zigDownloadUrl, client)
 	defer res.Body.Close()
 
-	zigSuffix := getUrlVersionSuffix(getOs(), getArch(), getZigLatestVersion(res), getOsFileExtension())
+	zigSuffix := utils.GetUrlVersionSuffix(res)
 
-	dlUrl := fmt.Sprintf("https://ziglang.org/builds/%s", zigSuffix)
+	dlUrl := fmt.Sprintf("%s/%s", zigArchivePrefix, zigSuffix)
 	res = request(http.MethodGet, dlUrl, client)
 	defer res.Body.Close()
 
@@ -60,7 +58,7 @@ func main() {
 	}
 
 	written := unzipFile(pathToFile)
-	pathToFile = strings.TrimSuffix(pathToFile, getOsFileExtension())
+	pathToFile = strings.TrimSuffix(pathToFile, utils.GetOsFileExtension())
 	log.Printf("succesfully downloaded and extracted total of %fmbs at: %s", float64(written)/1_048_576, pathToFile)
 	log.Printf("time took: %f seconds", time.Since(startTime).Seconds())
 }
@@ -103,22 +101,6 @@ func unzipFile(pathToFile string) (written int64) {
 	return
 }
 
-func getUrlVersionSuffix(operationSystem, arch, version, fileExtension string) string {
-	return fmt.Sprintf("zig-%s-%s-%s%s", operationSystem, arch, version, fileExtension)
-}
-
-func getZigLatestVersion(res *http.Response) string {
-	var payload struct {
-		Master struct {
-			Version string `json:"version"`
-		} `json:"master"`
-	}
-	if err := json.NewDecoder(res.Body).Decode(&payload); err != nil {
-		log.Fatalf("parsing response body failed with: %s", err)
-	}
-	return payload.Master.Version
-}
-
 func createFilepath(filename string) string {
 	dir, err := os.Getwd()
 	if err != nil {
@@ -141,46 +123,6 @@ func request(method, url string, client *http.Client) *http.Response {
 		log.Fatalf("response from %s failed with: %s", url, res.Status)
 	}
 	return res
-}
-
-func getOsFileExtension() string {
-	os := getOs()
-	switch os {
-	case windows:
-		return ".zip"
-	case linux:
-		return ".tar.xz"
-	case macos:
-		return ".tar.xz"
-	default:
-		panic("failed to get file extension for os: " + os)
-	}
-}
-
-func getArch() string {
-	arch := runtime.GOARCH
-	switch arch {
-	case "amd64":
-		return "x86_64"
-	case "arm64":
-		return "aarch64"
-	default:
-		panic("unsupported architecture: " + arch)
-	}
-}
-
-func getOs() string {
-	goos := runtime.GOOS
-	switch goos {
-	case windows:
-		return windows
-	case linux:
-		return linux
-	case darwin:
-		return macos
-	default:
-		panic("unsupported operation system: " + goos)
-	}
 }
 
 // go build -o myapp -ldflags="-s -w" -tags netgo -installsuffix netgo --ldflags="-extldflags=-static" -ldflags "-linkmode external -extldflags -static" -v main.go

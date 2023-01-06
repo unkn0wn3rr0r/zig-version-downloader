@@ -2,7 +2,7 @@
 
 ### This is a small program which downloads the latest (master) version for The Zig Programming language as an archive from here:
 ```
-[https://ziglang.org/download/index.json](https://ziglang.org/download/index.json)
+[Zig Website](https://ziglang.org/download/index.json)
 ```
 
 ### How to use it:

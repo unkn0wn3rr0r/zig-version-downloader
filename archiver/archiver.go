@@ -115,8 +115,5 @@ func createArchive() CreateArchive {
 		if err != nil {
 			log.Fatalf("failed to write file into destination %s error: %s", pathToFile, err)
 		}
-
-		log.Printf("successfully downloaded archive at: %s", pathToFile)
-		log.Println("do you want to unzip it? - [y]/[n]")
 	}
 }

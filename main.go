@@ -44,6 +44,8 @@ func main() {
 		panic(fmt.Sprintf("No such archiver type %T!\n", a))
 	}
 
+	log.Printf("successfully downloaded archive at: %s", pathToFile)
+	log.Println("do you want to unzip it? - [y]/[n]")
 	shouldReturn := readUserInput()
 	if shouldReturn {
 		return

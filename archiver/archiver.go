@@ -1,6 +1,7 @@
 package archiver
 
 import (
+	"archive/tar"
 	"archive/zip"
 	"io"
 	"log"
@@ -70,6 +71,35 @@ func (a *ZipArchiver) Unzip(pathToFile string) (written int64) {
 }
 
 func (a *TarArchiver) Unzip(pathToFile string) (written int64) {
+	file, err := os.Open(pathToFile)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	// Create a new tar reader
+	tr := tar.NewReader(file)
+
+	// Iterate through the files in the archive
+	for hdr, err := tr.Next(); err != io.EOF; {
+		if err != nil {
+			panic(err)
+		}
+		log.Println("filename:", hdr.Name)
+
+		out, err := os.Create(hdr.Name)
+		if err != nil {
+			panic(err)
+		}
+
+		w, err := io.Copy(out, tr)
+		if err != nil {
+			out.Close()
+			panic(err)
+		}
+		written += w
+		out.Close()
+	}
 	return
 }
 

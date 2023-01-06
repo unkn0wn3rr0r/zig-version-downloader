@@ -1,6 +1,6 @@
 # zig-version-downloader
 
-### <sub> This is a small program which downloads the latest (master) version of **The Zig Programming language** as an archive from here:</sub>
+### <sub>This is a small program which downloads the latest (master) version of the Zig programming language as an archive from here:</sub>
 <sub>[Zig Download Index JSON](https://ziglang.org/download/index.json)</sub>
 ------------------------------------------------------------------
 

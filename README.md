@@ -1,7 +1,6 @@
 # zig-version-downloader
 
 ### This is a small program which downloads the latest (master) version for The Zig Programming language as an archive from here:
-------------------------------------------------------------------
 [Zig Download Index JSON](https://ziglang.org/download/index.json)
 ------------------------------------------------------------------
 

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"runtime"
 )
 
@@ -14,6 +16,30 @@ const (
 	macos   = "macos"
 	darwin  = "darwin"
 )
+
+func MakeRequest(method, url string, client *http.Client) *http.Response {
+	req, err := http.NewRequest(method, url, nil)
+	if err != nil {
+		log.Fatalf("request to %s failed with: %s", url, err)
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		log.Fatalf("response from %s failed with: %s", url, err)
+	}
+	if res.StatusCode != http.StatusOK {
+		log.Fatalf("response from %s failed with: %s", url, res.Status)
+	}
+	return res
+}
+
+func CreateFilepath(filename string) string {
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("failed to get current working directory: %s", err)
+	}
+	path := filepath.Join(dir, filename)
+	return filepath.FromSlash(path)
+}
 
 func GetUrlVersionSuffix(res *http.Response) string {
 	return fmt.Sprintf("zig-%s-%s-%s%s", getOs(), getArch(), getZigLatestVersion(res), GetOsFileExtension())

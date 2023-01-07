@@ -55,13 +55,12 @@ func main() {
 		log.Println(err)
 		return
 	}
+
 	switch a := newArchiver.(type) {
 	case *archiver.ZipArchiver:
 		a.CreateArchive(pathToFile, res)
 	case *archiver.TarArchiver:
 		a.CreateArchive(pathToFile, res)
-	default:
-		panic(fmt.Sprintf("No such archiver type %T!\n", a))
 	}
 
 	log.Printf("successfully downloaded archive at: %s", pathToFile)
@@ -75,7 +74,11 @@ func main() {
 		return
 	}
 
-	written := newArchiver.Unzip(pathToFile)
+	written, err := newArchiver.Unzip(pathToFile)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 	extension, err := utils.GetOsFileExtension()
 	if err != nil {
 		log.Println(err)

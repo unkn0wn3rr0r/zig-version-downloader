@@ -12,7 +12,7 @@
 go run main.go
 ```
 
-##### 2. To test:
+##### 2. To run all tests in the subpackages from the current package:
 ```
-WIP
+go test ./...
 ```

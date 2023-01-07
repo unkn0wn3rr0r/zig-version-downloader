@@ -59,7 +59,7 @@ func (a *ZipArchiver) Unzip(pathToFile string) (written int64, err error) {
 				return 0, fmt.Errorf("creating target directory %s failed with err: %s", targetDirectory, err)
 			}
 		} else {
-			bsCopied, err := func() (int64, error) {
+			copyContents := func() (int64, error) {
 				defer zippedFile.Close()
 				openedFile, err := os.OpenFile(targetDirectory, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
 				if err != nil {
@@ -71,11 +71,12 @@ func (a *ZipArchiver) Unzip(pathToFile string) (written int64, err error) {
 					return 0, fmt.Errorf("failed to copy contents from %s to  %s err: %s", file.Name, openedFile.Name(), err)
 				}
 				return w, nil
-			}()
-			if err != nil {
-				return 0, err
 			}
-			written += bsCopied
+			if w, err := copyContents(); err != nil {
+				return 0, err
+			} else {
+				written += w
+			}
 		}
 	}
 	return
@@ -89,17 +90,16 @@ func (a *TarArchiver) Unzip(pathToFile string) (written int64, err error) {
 	return
 }
 
-// fix
 func createArchive() CreateArchive {
 	return func(pathToFile string, res *http.Response) {
 		archiveDestination, err := os.Create(pathToFile)
 		if err != nil {
-			log.Fatalf("failed to create destination dir from file %s error: %s", pathToFile, err)
+			log.Fatalf("failed to create destination dir from file %s error: %s", pathToFile, err) // fix
 		}
 		defer archiveDestination.Close()
 
 		if _, err = io.Copy(archiveDestination, res.Body); err != nil {
-			log.Fatalf("failed to write file into destination %s error: %s", pathToFile, err)
+			log.Fatalf("failed to write file into destination %s error: %s", pathToFile, err) // fix
 		}
 	}
 }

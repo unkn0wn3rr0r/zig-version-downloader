@@ -36,33 +36,44 @@ func TestCreateFilepath(t *testing.T) {
 }
 
 func TestGetOs(t *testing.T) {
+	expected := []string{windows, linux, macos}
+
 	actual, err := getOs()
-	printErr(t, err)
+	if err != nil {
+		t.Errorf("Expected one of: %v, Actual: %v", expected, err)
+	}
 
 	if actual != windows && actual != linux && actual != macos {
-		t.Errorf("Expected one of: %v, Actual: %v", []string{windows, linux, macos}, actual)
+		t.Errorf("Expected one of: %v, Actual: %v", expected, actual)
 	}
 
 }
 
 func TestGetArch(t *testing.T) {
+	expected := []string{"x86_64", "aarch64"}
+
 	actual, err := getArch()
-	printErr(t, err)
+	if err != nil {
+		t.Errorf("Expected one of: %v, Actual: %v", expected, err)
+	}
 
 	if actual != "x86_64" && actual != "aarch64" {
-		t.Errorf("Expected one of: %v, Actual: %v", []string{"x86_64", "aarch64"}, actual)
+		t.Errorf("Expected one of: %v, Actual: %v", expected, actual)
 	}
 
 }
 
 func TestGetOsFileExtension(t *testing.T) {
-	actual, err := GetOsFileExtension()
-	printErr(t, err)
+	expected := []string{".zip", ".tar.xz"}
 
-	if actual != ".zip" && actual != ".tar.xz" {
-		t.Errorf("Expected one of: %v, Actual: %v", []string{".zip", ".tar.xz"}, actual)
+	actual, err := GetOsFileExtension()
+	if err != nil {
+		t.Errorf("Expected one of: %v, Actual: %v", expected, err)
 	}
 
+	if actual != ".zip" && actual != ".tar.xz" {
+		t.Errorf("Expected one of: %v, Actual: %v", expected, actual)
+	}
 }
 
 func TestGetZigLatestVersion(t *testing.T) {
@@ -82,7 +93,9 @@ func TestGetZigLatestVersion(t *testing.T) {
 	res := recorder.Result()
 
 	actual, err := getZigLatestVersion(res)
-	printErr(t, err)
+	if err != nil {
+		t.Errorf("Expected: %v, Actual: %v", expected, err)
+	}
 
 	if actual != expected {
 		t.Errorf("Expected: %v, Actual: %v", expected, actual)

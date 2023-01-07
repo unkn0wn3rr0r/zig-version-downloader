@@ -53,7 +53,11 @@ func main() {
 
 	written := newArchiver.Unzip(pathToFile)
 	pathToFile = strings.TrimSuffix(pathToFile, utils.GetOsFileExtension())
-	log.Printf("succesfully downloaded and extracted total of %fmbs at: %s", float64(written)/1_048_576, pathToFile)
+	if written > 0 {
+		log.Printf("succesfully downloaded and extracted total of %fmbs at: %s", float64(written)/1_048_576, pathToFile)
+	} else {
+		log.Printf("succesfully downloaded and extracted files at: %s", pathToFile)
+	}
 	log.Printf("time took: %f seconds", time.Since(startTime).Seconds())
 }
 
@@ -68,7 +72,3 @@ func readUserInput() bool {
 	}
 	return false
 }
-
-// go build -o myapp -ldflags="-s -w" -tags netgo -installsuffix netgo --ldflags="-extldflags=-static" -ldflags "-linkmode external -extldflags -static" -v main.go
-// GOOS=darwin GOARCH=amd64 go build -o app-amd64-darwin main.go
-// GOOS=linux GOARCH=amd64 go build -o app-amd64-linux main.go

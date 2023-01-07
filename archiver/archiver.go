@@ -25,11 +25,15 @@ type TarArchiver struct {
 	CreateArchive
 }
 
-func NewArchiver() archiver {
-	if utils.GetOsFileExtension() == ".zip" {
-		return &ZipArchiver{CreateArchive: createArchive()}
+func NewArchiver() (a archiver, err error) {
+	extension, err := utils.GetOsFileExtension()
+	if err != nil {
+		return nil, err
 	}
-	return &TarArchiver{CreateArchive: createArchive()}
+	if extension == ".zip" {
+		return &ZipArchiver{CreateArchive: createArchive()}, nil
+	}
+	return &TarArchiver{CreateArchive: createArchive()}, nil
 }
 
 func (a *ZipArchiver) Unzip(pathToFile string) (written int64) {

@@ -3,7 +3,6 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -17,82 +16,100 @@ const (
 	darwin  = "darwin"
 )
 
-func MakeRequest(method, url string, client *http.Client) *http.Response {
+func MakeRequest(method, url string, client *http.Client) (res *http.Response, err error) {
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		log.Fatalf("request to %s failed with: %s", url, err)
+		return nil, fmt.Errorf("request to %s failed with: %s", url, err)
 	}
-	res, err := client.Do(req)
+	res, err = client.Do(req)
 	if err != nil {
-		log.Fatalf("response from %s failed with: %s", url, err)
+		return nil, fmt.Errorf("response from %s failed with: %s", url, err)
 	}
 	if res.StatusCode != http.StatusOK {
-		log.Fatalf("response from %s failed with: %s", url, res.Status)
+		return nil, fmt.Errorf("response from %s failed with status: %s", url, res.Status)
 	}
-	return res
+	return res, nil
 }
 
-func CreateFilepath(filename string) string {
+func CreateFilepath(filename string) (path string, err error) {
 	dir, err := os.Getwd()
 	if err != nil {
-		log.Fatalf("failed to get current working directory: %s", err)
+		return "", fmt.Errorf("failed to get current working directory: %s", err)
 	}
-	path := filepath.Join(dir, filename)
-	return filepath.FromSlash(path)
+	return filepath.FromSlash(filepath.Join(dir, filename)), nil
 }
 
-func GetUrlVersionSuffix(res *http.Response) string {
-	return fmt.Sprintf("zig-%s-%s-%s%s", getOs(), getArch(), getZigLatestVersion(res), GetOsFileExtension())
+func GetUrlVersionSuffix(res *http.Response) (suffix string, err error) {
+	version, err := getZigLatestVersion(res)
+	if err != nil {
+		return "", fmt.Errorf("getting latest version failed: %s", err)
+	}
+	extension, err := GetOsFileExtension()
+	if err != nil {
+		return "", fmt.Errorf("getting file extension failed: %s", err)
+	}
+	os, err := getOs()
+	if err != nil {
+		return "", fmt.Errorf("getting os failed: %s", err)
+	}
+	arch, err := getArch()
+	if err != nil {
+		return "", fmt.Errorf("getting architecture failed: %s", err)
+	}
+	return fmt.Sprintf("zig-%s-%s-%s%s", os, arch, version, extension), nil
 }
 
-func GetOsFileExtension() string {
-	os := getOs()
+func GetOsFileExtension() (extension string, err error) {
+	os, err := getOs()
+	if err != nil {
+		return "", err
+	}
 	switch os {
 	case windows:
-		return ".zip"
+		return ".zip", nil
 	case linux:
-		return ".tar.xz"
+		return ".tar.xz", nil
 	case macos:
-		return ".tar.xz"
+		return ".tar.xz", nil
 	default:
-		panic("failed to get file extension for os: " + os)
+		return "", fmt.Errorf("failed to get file extension for os: %s", os)
 	}
 }
 
-func getArch() string {
+func getArch() (ar string, err error) {
 	arch := runtime.GOARCH
 	switch arch {
 	case "amd64":
-		return "x86_64"
+		return "x86_64", nil
 	case "arm64":
-		return "aarch64"
+		return "aarch64", nil
 	default:
-		panic("unsupported architecture: " + arch)
+		return "", fmt.Errorf("unsupported architecture: %s", arch)
 	}
 }
 
-func getOs() string {
+func getOs() (opSystem string, err error) {
 	goos := runtime.GOOS
 	switch goos {
 	case windows:
-		return windows
+		return windows, nil
 	case linux:
-		return linux
+		return linux, nil
 	case darwin:
-		return macos
+		return macos, nil
 	default:
-		panic("unsupported operation system: " + goos)
+		return "", fmt.Errorf("unsupported operation system: %s", goos)
 	}
 }
 
-func getZigLatestVersion(res *http.Response) string {
+func getZigLatestVersion(res *http.Response) (version string, err error) {
 	var payload struct {
 		Master struct {
 			Version string `json:"version"`
 		} `json:"master"`
 	}
 	if err := json.NewDecoder(res.Body).Decode(&payload); err != nil {
-		log.Fatalf("parsing response body failed with: %s", err)
+		return "", fmt.Errorf("parsing response body failed with: %s", err)
 	}
-	return payload.Master.Version
+	return payload.Master.Version, nil
 }

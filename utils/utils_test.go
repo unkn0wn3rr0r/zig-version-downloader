@@ -46,7 +46,6 @@ func TestGetOs(t *testing.T) {
 	if actual != windows && actual != linux && actual != macos {
 		t.Errorf("Expected one of: %v, Actual: %v", expected, actual)
 	}
-
 }
 
 func TestGetArch(t *testing.T) {
@@ -60,7 +59,6 @@ func TestGetArch(t *testing.T) {
 	if actual != "x86_64" && actual != "aarch64" {
 		t.Errorf("Expected one of: %v, Actual: %v", expected, actual)
 	}
-
 }
 
 func TestGetOsFileExtension(t *testing.T) {

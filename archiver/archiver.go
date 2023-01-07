@@ -86,8 +86,7 @@ func createArchive() CreateArchive {
 		}
 		defer archiveDestination.Close()
 
-		_, err = io.Copy(archiveDestination, res.Body)
-		if err != nil {
+		if _, err = io.Copy(archiveDestination, res.Body); err != nil {
 			log.Fatalf("failed to write file into destination %s error: %s", pathToFile, err)
 		}
 	}

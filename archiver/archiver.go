@@ -59,18 +59,24 @@ func (a *ZipArchiver) Unzip(pathToFile string) (written int64, err error) {
 				return 0, fmt.Errorf("creating target directory %s failed with err: %s", targetDirectory, err)
 			}
 		} else {
-			openedFile, err := os.OpenFile(targetDirectory, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
+			bsCopied, err := func() (int64, error) {
+				defer zippedFile.Close()
+				openedFile, err := os.OpenFile(targetDirectory, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
+				if err != nil {
+					return 0, fmt.Errorf("failed to open the current file %s err: %s", targetDirectory, err)
+				}
+				defer openedFile.Close()
+				w, err := io.Copy(openedFile, zippedFile)
+				if err != nil {
+					return 0, fmt.Errorf("failed to copy contents from %s to  %s err: %s", file.Name, openedFile.Name(), err)
+				}
+				return w, nil
+			}()
 			if err != nil {
-				return 0, fmt.Errorf("failed to open the current file %s err: %s", targetDirectory, err)
+				return 0, err
 			}
-			w, err := io.Copy(openedFile, zippedFile)
-			if err != nil {
-				return 0, fmt.Errorf("failed to copy contents from %s to  %s err: %s", file.Name, openedFile.Name(), err)
-			}
-			written += w
-			openedFile.Close()
+			written += bsCopied
 		}
-		zippedFile.Close()
 	}
 	return
 }

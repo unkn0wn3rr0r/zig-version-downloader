@@ -90,14 +90,15 @@ func (a *TarArchiver) Unzip(pathToFile string) (written int64, err error) {
 	return
 }
 
+// i might want to try a different and more efficient approach here
 func createArchive() CreateArchive {
 	createArch := func(pathToFile string, res *http.Response) error {
+		log.Printf("downloading archive at: %s ...", pathToFile)
 		archiveDestination, err := os.Create(pathToFile)
 		if err != nil {
 			return fmt.Errorf("failed to create destination dir from file: %s error: %s", pathToFile, err)
 		}
 		defer archiveDestination.Close()
-
 		if _, err = io.Copy(archiveDestination, res.Body); err != nil {
 			return fmt.Errorf("failed to write file into destination: %s error: %s", pathToFile, err)
 		}

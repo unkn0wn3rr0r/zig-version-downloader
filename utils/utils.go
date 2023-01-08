@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -17,6 +18,7 @@ const (
 )
 
 func MakeRequest(method, url string, client *http.Client) (res *http.Response, err error) {
+	log.Printf("making request to: %s", url)
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("request to %s failed with: %s", url, err)
@@ -28,14 +30,17 @@ func MakeRequest(method, url string, client *http.Client) (res *http.Response, e
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("response from %s failed with status: %s", url, res.Status)
 	}
+	log.Printf("request to: %s was successful", url)
 	return res, nil
 }
 
 func CreateFilepath(filename string) (path string, err error) {
+	log.Printf("creating filepath: %s", filename)
 	dir, err := os.Getwd()
 	if err != nil {
 		return "", fmt.Errorf("failed to get current working directory: %s", err)
 	}
+	log.Printf("creation of filepath: %s was successful", filename)
 	return filepath.FromSlash(filepath.Join(dir, filename)), nil
 }
 

@@ -58,9 +58,15 @@ func main() {
 
 	switch a := newArchiver.(type) {
 	case *archiver.ZipArchiver:
-		a.CreateArchive(pathToFile, res)
+		if err := a.CreateArchive(pathToFile, res); err != nil {
+			log.Println(err)
+			return
+		}
 	case *archiver.TarArchiver:
-		a.CreateArchive(pathToFile, res)
+		if err := a.CreateArchive(pathToFile, res); err != nil {
+			log.Println(err)
+			return
+		}
 	}
 
 	log.Printf("successfully downloaded archive at: %s", pathToFile)

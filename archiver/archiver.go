@@ -17,7 +17,7 @@ type archiver interface {
 	Unzip(string) (written int64, err error)
 }
 
-type CreateArchive func(pathToFile string, res *http.Response)
+type CreateArchive func(pathToFile string, res *http.Response) error
 
 type ZipArchiver struct {
 	CreateArchive
@@ -68,7 +68,7 @@ func (a *ZipArchiver) Unzip(pathToFile string) (written int64, err error) {
 				defer openedFile.Close()
 				w, err := io.Copy(openedFile, zippedFile)
 				if err != nil {
-					return 0, fmt.Errorf("failed to copy contents from %s to  %s err: %s", file.Name, openedFile.Name(), err)
+					return 0, fmt.Errorf("failed to copy contents from file: %s to %s err: %s", file.Name, openedFile.Name(), err)
 				}
 				return w, nil
 			}
@@ -91,15 +91,17 @@ func (a *TarArchiver) Unzip(pathToFile string) (written int64, err error) {
 }
 
 func createArchive() CreateArchive {
-	return func(pathToFile string, res *http.Response) {
+	createArch := func(pathToFile string, res *http.Response) error {
 		archiveDestination, err := os.Create(pathToFile)
 		if err != nil {
-			log.Fatalf("failed to create destination dir from file %s error: %s", pathToFile, err) // fix
+			return fmt.Errorf("failed to create destination dir from file: %s error: %s", pathToFile, err)
 		}
 		defer archiveDestination.Close()
 
 		if _, err = io.Copy(archiveDestination, res.Body); err != nil {
-			log.Fatalf("failed to write file into destination %s error: %s", pathToFile, err) // fix
+			return fmt.Errorf("failed to write file into destination: %s error: %s", pathToFile, err)
 		}
+		return nil
 	}
+	return createArch
 }

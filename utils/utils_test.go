@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -75,7 +76,7 @@ func TestGetOsFileExtension(t *testing.T) {
 }
 
 func TestGetZigLatestVersion(t *testing.T) {
-	expected := "someversion"
+	expected := "some-version"
 	var payload struct {
 		Master struct {
 			Version string `json:"version"`
@@ -97,6 +98,40 @@ func TestGetZigLatestVersion(t *testing.T) {
 
 	if actual != expected {
 		t.Errorf("Expected: %v, Actual: %v", expected, actual)
+	}
+
+	recorder.Write(out)
+
+	actual, err = getZigLatestVersion(res)
+	if err == nil {
+		t.Errorf("Expected: %v, Actual: %v", err, actual)
+	}
+}
+
+func TestGetUrlVersionSuffix(t *testing.T) {
+	var payload struct {
+		Master struct {
+			Version string `json:"version"`
+		} `json:"master"`
+	}
+	payload.Master.Version = "some-version"
+
+	out, err := json.Marshal(payload)
+	printErr(t, err)
+
+	recorder := httptest.NewRecorder()
+	recorder.Write(out)
+	res := recorder.Result()
+
+	expected := []string{".zip", ".tar.xz"}
+
+	actual, err := GetUrlVersionSuffix(res)
+	if err != nil {
+		t.Errorf("Expected one of: %v, Actual: %v", expected, err)
+	}
+
+	if !strings.HasSuffix(actual, "some-version.zip") && !strings.HasSuffix(actual, "some-version.tar.xz") {
+		t.Errorf("Expected one of: %v, Actual: %v", expected, actual)
 	}
 }
 

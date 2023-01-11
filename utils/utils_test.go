@@ -2,6 +2,8 @@ package utils
 
 import (
 	"encoding/json"
+	"io"
+	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
@@ -133,6 +135,41 @@ func TestGetUrlVersionSuffix(t *testing.T) {
 	if !strings.HasSuffix(actual, "some-version.zip") && !strings.HasSuffix(actual, "some-version.tar.xz") {
 		t.Errorf("Expected one of: %v, Actual: %v", expected, actual)
 	}
+}
+
+func TestMakeRequest(t *testing.T) {
+	expected := "some-response"
+
+	roundTripFn := RoundTripFn(func(req *http.Request) *http.Response {
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(strings.NewReader(expected)),
+		}
+	})
+	client := &http.Client{
+		Transport: roundTripFn,
+	}
+
+	res, err := MakeRequest(http.MethodGet, "some-url.com", client)
+	if err != nil {
+		t.Errorf("Expected Status: %v, Actual Status: %v", http.StatusOK, res.StatusCode)
+	}
+
+	bs, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Errorf("Expected: %v, Actual: %v", expected, err)
+	}
+
+	actual := string(bs)
+	if actual != expected {
+		t.Errorf("Expected: %v, Actual: %v", expected, actual)
+	}
+}
+
+type RoundTripFn func(req *http.Request) *http.Response
+
+func (fn RoundTripFn) RoundTrip(req *http.Request) (*http.Response, error) {
+	return fn(req), nil
 }
 
 func printErr(t *testing.T, err error) {

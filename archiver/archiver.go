@@ -90,7 +90,6 @@ func (a *TarArchiver) Unzip(pathToFile string) (written int64, err error) {
 	return
 }
 
-// i might want to try a different and more efficient approach here
 func createArchive() CreateArchive {
 	createArch := func(pathToFile string, res *http.Response) error {
 		log.Printf("downloading archive at: %s ...", pathToFile)

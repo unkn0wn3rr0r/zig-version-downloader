@@ -1,6 +1,7 @@
 package archiver
 
 import (
+	"log"
 	"os"
 	"reflect"
 	"testing"
@@ -29,7 +30,20 @@ func TestNewArchiver(t *testing.T) {
 		t.Errorf("Expected one of: %v, Actual: %v", concreteTypes, actualName)
 	}
 
-	pathToZipFile, err := utils.CreateFilepath("test-files\\test-file.zip")
+	supportedExtensions := []string{".zip", ".tar.xz"}
+	extension, err := utils.GetOsFileExtension()
+	if err != nil {
+		t.Errorf("Expected one of: %v, Actual: %v", supportedExtensions, err)
+	}
+
+	var pathToZipFile string
+	if extension == ".zip" {
+		pathToZipFile, err = utils.CreateFilepath("test-files\\test-file.zip")
+	} else {
+		log.Println("no test setup found for 'tar.xz' files")
+		return
+	}
+
 	if err != nil {
 		t.Errorf("Expected: %v, Actual: %v", nil, err)
 	}

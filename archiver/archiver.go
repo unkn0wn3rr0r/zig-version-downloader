@@ -22,6 +22,7 @@ type CreateArchive func(pathToFile string, res *http.Response) error
 type ZipArchiver struct {
 	CreateArchive
 }
+
 type TarArchiver struct {
 	CreateArchive
 }

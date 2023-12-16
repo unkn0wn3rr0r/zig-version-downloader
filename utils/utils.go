@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -8,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
+	"time"
 )
 
 const (
@@ -79,6 +82,18 @@ func GetOsFileExtension() (extension string, err error) {
 	default:
 		return "", fmt.Errorf("failed to get file extension for os: %s", os)
 	}
+}
+
+func ReadUserInput(startTime time.Time) (shouldReturn bool, err error) {
+	answer, err := bufio.NewReader(os.Stdin).ReadString('\n')
+	if err != nil {
+		return false, fmt.Errorf("failed to read user input err: %s", err)
+	}
+	if !strings.HasPrefix(strings.TrimSpace(answer), "y") {
+		log.Printf("time took: %f seconds", time.Since(startTime).Seconds())
+		return true, nil
+	}
+	return false, nil
 }
 
 func getArch() (ar string, err error) {

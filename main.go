@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -71,7 +69,7 @@ func main() {
 
 	log.Printf("successfully downloaded archive at: %s", pathToFile)
 	log.Println("do you want to unzip it? - [y]/[n]")
-	shouldReturn, err := readUserInput()
+	shouldReturn, err := utils.ReadUserInput(startTime)
 	if err != nil {
 		log.Println(err)
 		return
@@ -98,16 +96,4 @@ func main() {
 		log.Printf("succesfully downloaded and extracted files at: %s", pathToFile)
 	}
 	log.Printf("time took: %f seconds", time.Since(startTime).Seconds())
-}
-
-func readUserInput() (shouldReturn bool, err error) {
-	answer, err := bufio.NewReader(os.Stdin).ReadString('\n')
-	if err != nil {
-		return false, fmt.Errorf("failed to read user input err: %s", err)
-	}
-	if !strings.HasPrefix(strings.TrimSpace(answer), "y") {
-		log.Printf("time took: %f seconds", time.Since(startTime).Seconds())
-		return true, nil
-	}
-	return false, nil
 }
